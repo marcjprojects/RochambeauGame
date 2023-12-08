@@ -1,40 +1,40 @@
-import tensorflow as tf
-import tensorflow_hub as hub
-from PIL import Image
-import numpy as np
 import cv2
-import matplotlib.pyplot as plt
+# Load the pre-trained neural network for object detection
+net = cv2.dnn.readNetFromTensorflow('frozen_inference_graph.pb', 'graph.pbtxt')
 
-# Load a pre-trained object detection model from TensorFlow Hub
-model_url = "https://tfhub.dev/tensorflow/ssd_mobilenet_v2/2"
-model = hub.load(model_url).signatures['default']
+# Read the input image
+image = cv2.imread('marc.jpg')
 
-# Load and preprocess the input image
-image_path = 'streets.jpg'
-image = Image.open(image_path)
-image = np.array(image)
-input_image = image[np.newaxis, ...]
+# Load the background image
+background = cv2.imread('streets.jpg')
 
-# Perform object detection
-result = model(tf.convert_to_tensor(input_image))
+# Prepare the input image for the neural network
+blob = cv2.dnn.blobFromImage(image, 1.0, (300, 300), (104, 177, 123))
 
-# Get the detected objects and their scores
-boxes = result['detection_boxes'][0].numpy()
-scores = result['detection_scores'][0].numpy()
+# Set the input for the neural network
+net.setInput(blob)
 
-# Threshold for considering a detection as valid
-threshold = 0.5
-detected_boxes = boxes[scores >= threshold]
+# Run object detection to find the persons in the image
+detections = net.forward()
 
-# Draw bounding boxes on the original image
-for box in detected_boxes:
-    ymin, xmin, ymax, xmax = box
-    xmin = int(xmin * image.shape[1])
-    xmax = int(xmax * image.shape[1])
-    ymin = int(ymin * image.shape[0])
-    ymax = int(ymax * image.shape[0])
-    cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (255, 0, 0), 2)
+# Loop through the detections
+for i in range(detections.shape[2]):
+    confidence = detections[0, 0, i, 2]
+    if confidence > 0.5:  # If the confidence is high enough
+        # Get the coordinates of the detected person
+        box = detections[0, 0, i, 3:7] * [image.shape[1], image.shape[0], image.shape[1], image.shape[0]]
+        (startX, startY, endX, endY) = box.astype("int")
+        
+        # Extract the person from the image
+        person = image[startY:endY, startX:endX]
 
-# Display the resulting image with bounding boxes
-plt.imshow(image)
-plt.show()
+        # Resize the background to match the size of the person
+        background_resized = cv2.resize(background, (endX - startX, endY - startY))
+
+        # Replace the background with the new background
+        image[startY:endY, startX:endX] = background_resized
+
+# Display the modified image
+cv2.imshow('Modified Image', image)
+cv2.waitKey(0)
+cv2.destroyAllWindows()

@@ -1,5 +1,4 @@
 # RochambeauGame
-## Rock paper scissors game
 
 I have done four commit for the next checklist
 
@@ -7,7 +6,7 @@ I have done four commit for the next checklist
 The starter Player class always plays 'rock'. That's not a very good strategy! Create a subclass called RandomPlayer that chooses its move at random. When you call the move method on a RandomPlayer object, it should return one of 'rock', 'paper', or 'scissors' at random.
 Change the code so it plays a game between two RandomPlayer objects.
 
-**3. Keep score** -> DONE
+**3. Keep score -> DONE**.
 The starter Game class does not keep score. It doesn't even notice which player won each round. Update the Game class so that it displays the outcome of each round, and keeps score for both players. You can use the provided beats function, which tells whether one move beats another one.
 Make sure to handle ties — when both players make the same move!
 
